@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a08b8fdb2805c044fad25853dba7cbcb, type: 3}
+  m_Name: Forest
+  m_EditorClassIdentifier: 
+  tileName: Forest
+  bonusDamage: 1
+  bonusUnit: {fileID: 11400000, guid: 294c6ea37468ccc41bf000b10a4d8706, type: 2}
+  tileSprite: {r: 0.13333334, g: 0.69411767, b: 0.29803923, a: 1}
