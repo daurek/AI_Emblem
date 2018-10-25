@@ -2,14 +2,14 @@
 
 public class Tile : MonoBehaviour
 {
-    private TileData tileData;
-    private Unit currentUnit;
+    public TileData TileData { get; private set; }
+    public Unit currentUnit;
     private Vector2 position;
 
     public void SetTileData(TileData _tileData)
     {
-        tileData = _tileData;
-        GetComponent<SpriteRenderer>().color = tileData.tileSprite;
+        TileData = _tileData;
+        GetComponent<SpriteRenderer>().color = TileData.tileSprite;
     }
 }
 

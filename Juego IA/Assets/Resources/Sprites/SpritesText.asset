@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84a92b25f83d49b9bc132d206b370281, type: 3}
+  m_Name: SpritesText
+  m_EditorClassIdentifier: 
+  hashCode: 3586240
+  material: {fileID: 21995847281789114}
+  materialHashCode: 0
+  spriteSheet: {fileID: 2800000, guid: 2c5dcec3c62ca504faffef8bffe93c21, type: 3}
+  spriteInfoList:
+  - id: 0
+    x: 37
+    y: 37
+    width: 30
+    height: 27
+    xOffset: 2
+    yOffset: 26.5
+    xAdvance: 30
+    scale: 1
+    name: Health
+    hashCode: -1510403364
+    unicode: 0
+    pivot: {x: -15, y: 13.5}
+    sprite: {fileID: 21300002, guid: 2c5dcec3c62ca504faffef8bffe93c21, type: 3}
+  - id: 1
+    x: 1
+    y: 5
+    width: 32
+    height: 26
+    xOffset: 2
+    yOffset: 24.7
+    xAdvance: 32
+    scale: 1
+    name: Speed
+    hashCode: 99047591
+    unicode: 0
+    pivot: {x: -16, y: 13}
+    sprite: {fileID: 21300004, guid: 2c5dcec3c62ca504faffef8bffe93c21, type: 3}
+  - id: 2
+    x: 1
+    y: 34
+    width: 32
+    height: 32
+    xOffset: 2
+    yOffset: 28
+    xAdvance: 32
+    scale: 1
+    name: Damage
+    hashCode: -1671533397
+    unicode: 0
+    pivot: {x: -16, y: 16}
+    sprite: {fileID: 21300000, guid: 2c5dcec3c62ca504faffef8bffe93c21, type: 3}
+  - id: 3
+    x: 35.56
+    y: 2
+    width: 34
+    height: 32
+    xOffset: 4
+    yOffset: 29.8
+    xAdvance: 34
+    scale: 1
+    name: Range
+    hashCode: 100706207
+    unicode: 0
+    pivot: {x: -17, y: 16}
+    sprite: {fileID: 21300006, guid: 2c5dcec3c62ca504faffef8bffe93c21, type: 3}
+  fallbackSpriteAssets: []
+--- !u!21 &21995847281789114
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: TextMeshPro/Sprite
+  m_Shader: {fileID: 4800000, guid: cf81c85f95fe47e1a27f6ae460cf182c, type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 2c5dcec3c62ca504faffef8bffe93c21, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _ColorMask: 15
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _UseUIAlphaClip: 0
+    m_Colors:
+    - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 32767}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}

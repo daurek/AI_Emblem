@@ -11,7 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f0170a3294aa38429e8e0fb22df41dc, type: 3}
   m_Name: Soldier
   m_EditorClassIdentifier: 
-  unitName: Soldado
+  unitName: Soldier
   id: 1
   baseDamage: 3
   range: 1
