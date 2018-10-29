@@ -17,4 +17,4 @@ MonoBehaviour:
   range: 3
   movementSpeed: 3
   maxHealth: 12
-  unitSprite: {fileID: 0}
+  unitSprite: {fileID: 21300020, guid: d25503d750c91fb47acff8850423107f, type: 3}
