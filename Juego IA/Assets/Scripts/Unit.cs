@@ -9,6 +9,7 @@ public class Unit : MonoBehaviour
     public int CurrentMovementPoints { get; private set; }
     private bool hasAttacked;
     private bool hasMoved;
+    public bool IsDead { get; private set; }
 
     private SpriteRenderer spriteRenderer;
 
@@ -55,6 +56,18 @@ public class Unit : MonoBehaviour
 
         destination.currentUnit = this;
         Selector.instance.movingUnit = false;
+
+    }
+
+    public void Hit(int damage)
+    {
+        CurrentHealth -= damage;
+        if (CurrentHealth <= 0)
+        {
+            IsDead = true;
+            Destroy(gameObject);
+            Selector.instance.SetHoverInfo();
+        }
 
     }
 

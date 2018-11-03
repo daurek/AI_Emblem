@@ -9,8 +9,11 @@ public class Selector : MonoBehaviour
 
     #region UI
 
+    public TextMeshProUGUI logRef;
     public GameObject hoverInfo;
     public GameObject selectInfo;
+    public GameObject damageTextPrefab;
+    private RectTransform canvasRect;
     private GameObject tileInfo;
     private GameObject unitInfo;
     private TextMeshProUGUI tileName;
@@ -31,13 +34,11 @@ public class Selector : MonoBehaviour
     private Unit selectedUnit;
     public bool movingUnit { get; set; }
 
-
-
-
     private void Awake()
     {
         instance = this;
 
+        canvasRect = GetComponent<RectTransform>();
         hoverInfo.SetActive(false);
         selectInfo.SetActive(false);
 
@@ -113,43 +114,66 @@ public class Selector : MonoBehaviour
             }
         }
 
-        // Move
+        // Move or Attack
         if (Input.GetMouseButtonDown(1))
-        {
+        {   
+            // No unit is moving
             if (!movingUnit)
-            {
+            {   
+                // Unit is selected
                 if (selectedUnit)
                 {
                     selectedTile = hoveredTile;
 
+                    // Destination tile has been selected
                     if (selectedTile)
-                    {
-                        if (!selectedTile.currentUnit && selectedTile.transform.childCount != 0)
-                        {
-                            GameManager.instance.ClearRangeIndicator();
-                            selectedUnit.SetLayer(1);
-                            oldTile.currentUnit = null;
-                            StartCoroutine(selectedUnit.Move(selectedTile));
-                            oldTile = selectedTile;
+                    {   
+                        // Destination tile is in range of movement
+                        if (selectedTile.transform.childCount != 0)
+                        {   
+                            // No unit on that tile
+                            if (!selectedTile.currentUnit)
+                            {   
+                                // Move unit
+                                GameManager.instance.ClearRangeIndicator();
+                                selectedUnit.SetLayer(1);
+                                oldTile.currentUnit = null;
+                                StartCoroutine(selectedUnit.Move(selectedTile));
+                                oldTile = selectedTile;
+                            }
+                            // Unit on tile
+                            else
+                            {   
+                                // On range
+                                if (selectedUnit.UnitData.range >= GameManager.DistanceWithLines(selectedUnit.transform.position, selectedTile.currentUnit.transform.position) )
+                                {   
+                                    // Attack
+                                    GameManager.instance.ClearRangeIndicator();
+                                    selectedUnit.SetLayer(1);
+                                    selectedTile.currentUnit.Hit(selectedUnit.CurrentDamage);
+                                    CreateDamageText(selectedUnit.CurrentDamage, selectedTile.currentUnit.transform.position);
+                                    SetHoverInfo();
+                                    Log("<color=white> " + selectedUnit.UnitData.name + " dealt <color=red>" + selectedUnit.CurrentDamage + "<color=white> damage to " + selectedTile.currentUnit.UnitData.name + "\n");
+                                }
+                                else
+                                {
+                                    Log("<color=red> " + selectedUnit.UnitData.unitName + " is out of range \n");
+                                }
+
+                                
+                            }
                         }
-                        else
-                        {
-                            // Tile Occupied
-                        }
+                        
                     }
 
                     
-                }
-                else
-                {
-                    // Unit not selected
                 }
             }
             
         }
     }
 
-    private void SetHoverInfo()
+    public void SetHoverInfo()
     {
         unitName.text = "";
         unitStats.text = "";
@@ -158,7 +182,7 @@ public class Selector : MonoBehaviour
         tileName.text = hoveredTile.TileData.tileName;
         if (hoveredTile.TileData.bonusUnit) tileBonus.SetText("+ " + hoveredTile.TileData.bonusDamage + "<sprite name=Damage> to <color=yellow><b>" + hoveredTile.TileData.bonusUnit.unitName + "</b>");
 
-        if (hoveredTile.currentUnit)
+        if (hoveredTile.currentUnit && !hoveredTile.currentUnit.IsDead)
         {
             unitName.text = hoveredTile.currentUnit.UnitData.unitName;
 
@@ -185,5 +209,20 @@ public class Selector : MonoBehaviour
         selectedUnitHealthCount.text = selectedUnit.CurrentHealth + " / " + selectedUnit.UnitData.maxHealth;
     }
 
-    
+    private void CreateDamageText(int damage, Vector2 position)
+    {
+        Vector2 ViewportPosition = Camera.main.WorldToViewportPoint(position);
+        Vector2 WorldObject_ScreenPosition = new Vector2(
+        ((ViewportPosition.x * canvasRect.sizeDelta.x) - (canvasRect.sizeDelta.x * 0.5f)),
+        ((ViewportPosition.y * canvasRect.sizeDelta.y) - (canvasRect.sizeDelta.y * 0.5f)));
+
+        RectTransform ui = Instantiate(damageTextPrefab, transform).GetComponent<RectTransform>();
+        ui.GetComponent<TextMeshProUGUI>().text = ""  + damage;
+        ui.anchoredPosition = WorldObject_ScreenPosition;
+    }
+
+    public void Log(string logMessage)
+    {
+        logRef.SetText(logRef.text + logMessage);
+    }
 }

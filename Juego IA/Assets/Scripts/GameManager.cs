@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     public TileDataRow[] tileMapData;
     public UnitData unitExample;
     public GameObject squarePrefab;
+   
     private List<List<Tile>> tileMap;
 
     private Transform levelContainer;
@@ -92,7 +93,6 @@ public class GameManager : MonoBehaviour
         
         totalRange = range * 2 + 1;
 
-        print(range);
         GameObject[,] rangeArr = new GameObject[totalRange, totalRange];
         
         for (int i = 0; i < rangeArr.GetLength(0); i++)
@@ -160,4 +160,7 @@ public class GameManager : MonoBehaviour
         }
         return distance;
     }
+
+    
+
 }
