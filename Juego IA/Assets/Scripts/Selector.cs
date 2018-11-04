@@ -16,10 +16,14 @@ public class Selector : MonoBehaviour
     private RectTransform canvasRect;
     private GameObject tileInfo;
     private GameObject unitInfo;
+    private GameObject unitStatsInfo;
     private TextMeshProUGUI tileName;
     private TextMeshProUGUI tileBonus;
     private TextMeshProUGUI unitName;
     private TextMeshProUGUI unitStats;
+    private TextMeshProUGUI selectUnitDamageText;
+    private TextMeshProUGUI selectUnitSpeedText;
+    private TextMeshProUGUI selectUnitRangeText;
 
     private TextMeshProUGUI selectedUnitName;
     private TextMeshProUGUI selectedUnitHealthCount;
@@ -32,7 +36,7 @@ public class Selector : MonoBehaviour
     private Tile selectedTile;
     private Tile oldTile;
     private Unit selectedUnit;
-    public bool movingUnit { get; set; }
+    public bool MovingUnit { get; set; }
 
     private void Awake()
     {
@@ -44,6 +48,7 @@ public class Selector : MonoBehaviour
 
         tileInfo = hoverInfo.transform.GetChild(0).gameObject;
         unitInfo = hoverInfo.transform.GetChild(1).gameObject;
+        unitStatsInfo = selectInfo.transform.GetChild(4).gameObject;
 
         tileName = tileInfo.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
         tileBonus = tileInfo.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
@@ -55,6 +60,9 @@ public class Selector : MonoBehaviour
         selectedHealthBar = selectInfo.transform.GetChild(2).GetChild(0).GetComponent<Image>();
         selectedUnitHealthCount = selectInfo.transform.GetChild(2).GetChild(1).GetComponent<TextMeshProUGUI>();
 
+        selectUnitDamageText = unitStatsInfo.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
+        selectUnitSpeedText = unitStatsInfo.transform.GetChild(1).GetChild(0).GetComponent<TextMeshProUGUI>();
+        selectUnitRangeText = unitStatsInfo.transform.GetChild(2).GetChild(0).GetComponent<TextMeshProUGUI>();
 
         tileName.text = "";
         tileBonus.text = "";
@@ -91,7 +99,7 @@ public class Selector : MonoBehaviour
         // Select
         if (Input.GetMouseButtonDown(0))
         {
-            if (!movingUnit)
+            if (!MovingUnit)
             {
                 // If tile selected has unit then select that unit
                 if (hoveredTile && hoveredTile.currentUnit)
@@ -118,7 +126,7 @@ public class Selector : MonoBehaviour
         if (Input.GetMouseButtonDown(1))
         {   
             // No unit is moving
-            if (!movingUnit)
+            if (!MovingUnit)
             {   
                 // Unit is selected
                 if (selectedUnit)
@@ -139,6 +147,7 @@ public class Selector : MonoBehaviour
                                 selectedUnit.SetLayer(1);
                                 oldTile.currentUnit = null;
                                 StartCoroutine(selectedUnit.Move(selectedTile));
+                                SetSelectedInfo();
                                 oldTile = selectedTile;
                             }
                             // Unit on tile
@@ -207,6 +216,9 @@ public class Selector : MonoBehaviour
 
         selectedHealthBar.fillAmount = (float)selectedUnit.CurrentHealth / selectedUnit.UnitData.maxHealth;
         selectedUnitHealthCount.text = selectedUnit.CurrentHealth + " / " + selectedUnit.UnitData.maxHealth;
+        selectUnitDamageText.text = "" + selectedUnit.CurrentDamage;
+        selectUnitSpeedText.text = selectedUnit.CurrentMovementPoints + " / " + selectedUnit.UnitData.movementSpeed;
+        selectUnitRangeText.text = "" + selectedUnit.UnitData.range;
     }
 
     private void CreateDamageText(int damage, Vector2 position)

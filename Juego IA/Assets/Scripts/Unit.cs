@@ -31,7 +31,7 @@ public class Unit : MonoBehaviour
     public IEnumerator Move(Tile destination)
     {
         CurrentMovementPoints -= (int)GameManager.DistanceWithLines(transform.position, destination.Position);
-        Selector.instance.movingUnit = true;
+        Selector.instance.MovingUnit = true;
 
         Vector2 finalPosition;
 
@@ -55,7 +55,7 @@ public class Unit : MonoBehaviour
         }
 
         destination.currentUnit = this;
-        Selector.instance.movingUnit = false;
+        Selector.instance.MovingUnit = false;
 
     }
 

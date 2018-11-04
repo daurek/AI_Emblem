@@ -82,16 +82,23 @@ public class GameManager : MonoBehaviour
 
         currentTile.currentUnit.SetLayer(2);
 
-        int range = currentTile.currentUnit.CurrentMovementPoints;
+        int movementRange = currentTile.currentUnit.CurrentMovementPoints;
+        int attackRange = currentTile.currentUnit.UnitData.range;
         int totalRange= 0;
+        int range = 0;
 
-        if (range == 0)
+        if (movementRange < attackRange)
         {
-            onlyShowEnemies = true;
-            range = currentTile.currentUnit.UnitData.range; 
+            range = attackRange;
+
         }
-        
+        else
+        {
+            range = movementRange;
+        }
+
         totalRange = range * 2 + 1;
+        
 
         GameObject[,] rangeArr = new GameObject[totalRange, totalRange];
         
@@ -103,29 +110,34 @@ public class GameManager : MonoBehaviour
                 
                 if (rangePos.x >= 0 && rangePos.y >= 0 && rangePos.x < tileMap[0].Count && rangePos.y < tileMap[0].Count && tileMap[(int)rangePos.y][(int)rangePos.x] != currentTile)
                 {
-                    
                     // Calculate distance to point
                     float distance = DistanceWithLines(currentTile.Position, rangePos);
 
-                    if (distance <= range)
-                    {
-                        Tile tileRef = tileMap[(int)rangePos.y][(int)rangePos.x];
+                    Tile tileRef = tileMap[(int)rangePos.y][(int)rangePos.x];
 
-                        if (!onlyShowEnemies)
-                        {
-                            SpriteRenderer rangeRenderer = Instantiate(squarePrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
-                            rangeRenderer.sortingOrder = 1;
-                            if (tileRef.currentUnit) rangeRenderer.color = blocked;
-                            else rangeRenderer.color = ableToMove;
-                            rangeIndicatorList.Add(rangeRenderer.gameObject);
-                        }
-                        else if(tileRef.currentUnit)
-                        {
-                            SpriteRenderer rangeRenderer = Instantiate(squarePrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
-                            rangeRenderer.sortingOrder = 1;
-                            rangeRenderer.color = blocked;
-                            rangeIndicatorList.Add(rangeRenderer.gameObject);
-                        }
+                    if (distance <= attackRange && tileRef.currentUnit)
+                    {
+                        SpriteRenderer rangeRenderer = Instantiate(squarePrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
+                        rangeRenderer.sortingOrder = 1;
+                        rangeRenderer.color = blocked;
+                        rangeIndicatorList.Add(rangeRenderer.gameObject);
+                        
+                    }
+                    else if (distance <= movementRange && !tileRef.currentUnit)
+                    {
+                        SpriteRenderer rangeRenderer = Instantiate(squarePrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
+                        rangeRenderer.sortingOrder = 1;
+                        rangeRenderer.color = ableToMove;
+                        //if (!onlyShowEnemies)
+                        //{
+                        //    if (tileRef.currentUnit) rangeRenderer.color = blocked;
+                        //    else rangeRenderer.color = ableToMove;
+                        //}
+                        //else if(tileRef.currentUnit)
+                        //{
+                        //    rangeRenderer.color = blocked;
+                        //}
+                        rangeIndicatorList.Add(rangeRenderer.gameObject);
                     }
                 }
             }
