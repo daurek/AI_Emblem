@@ -7,9 +7,10 @@ public class Unit : MonoBehaviour
     public int CurrentDamage { get; private set; }
     public int CurrentHealth { get; private set; }
     public int CurrentMovementPoints { get; private set; }
-    private bool hasAttacked;
-    private bool hasMoved;
+    public bool HasAttacked { get; set; }
+    public bool HasMoved { get; set; }
     public bool IsDead { get; private set; }
+    public int Player { get; set; }
 
     private SpriteRenderer spriteRenderer;
 
@@ -53,8 +54,12 @@ public class Unit : MonoBehaviour
             transform.position = Vector2.MoveTowards(transform.position, finalPosition, UnitData.movementSpeed * Time.deltaTime);
             yield return new WaitForEndOfFrame();
         }
-
         destination.currentUnit = this;
+        if (destination.TileData.bonusUnit && destination.TileData.bonusUnit.unitName == destination.currentUnit.UnitData.unitName)
+            CurrentDamage = UnitData.baseDamage + destination.TileData.bonusDamage;
+        else
+            CurrentDamage = UnitData.baseDamage;
+        Selector.instance.SetSelectedInfo();
         Selector.instance.MovingUnit = false;
 
     }
@@ -65,7 +70,8 @@ public class Unit : MonoBehaviour
         if (CurrentHealth <= 0)
         {
             IsDead = true;
-            Destroy(gameObject);
+            Selector.instance.Log("<color=orange> " + UnitData.unitName + " has died \n");
+            GameManager.instance.RemoveUnit(this, Player);
             Selector.instance.SetHoverInfo();
         }
 
@@ -74,6 +80,12 @@ public class Unit : MonoBehaviour
     public void SetLayer(int layer)
     {
         spriteRenderer.sortingOrder = layer;
+    }
+
+    public void ResetUnit()
+    {
+        HasAttacked = false;
+        CurrentMovementPoints = UnitData.movementSpeed;
     }
 
 }

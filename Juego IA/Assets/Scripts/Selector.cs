@@ -36,6 +36,8 @@ public class Selector : MonoBehaviour
     private Tile selectedTile;
     private Tile oldTile;
     private Unit selectedUnit;
+    internal static object intance;
+
     public bool MovingUnit { get; set; }
 
     private void Awake()
@@ -102,7 +104,7 @@ public class Selector : MonoBehaviour
             if (!MovingUnit)
             {
                 // If tile selected has unit then select that unit
-                if (hoveredTile && hoveredTile.currentUnit)
+                if (hoveredTile && hoveredTile.currentUnit && hoveredTile.currentUnit.Player == GameManager.instance.PlayerTurn)
                 {   
                     if(selectedUnit) selectedUnit.SetLayer(1);
 
@@ -152,27 +154,36 @@ public class Selector : MonoBehaviour
                             }
                             // Unit on tile
                             else
-                            {   
-                                // On range
-                                if (selectedUnit.UnitData.range >= GameManager.DistanceWithLines(selectedUnit.transform.position, selectedTile.currentUnit.transform.position) )
-                                {   
-                                    // Attack
-                                    GameManager.instance.ClearRangeIndicator();
-                                    selectedUnit.SetLayer(1);
-                                    selectedTile.currentUnit.Hit(selectedUnit.CurrentDamage);
-                                    CreateDamageText(selectedUnit.CurrentDamage, selectedTile.currentUnit.transform.position);
-                                    SetHoverInfo();
-                                    Log("<color=white> " + selectedUnit.UnitData.name + " dealt <color=red>" + selectedUnit.CurrentDamage + "<color=white> damage to " + selectedTile.currentUnit.UnitData.name + "\n");
-                                }
-                                else
+                            {
+                                if (!oldTile.currentUnit.HasAttacked)
                                 {
-                                    Log("<color=red> " + selectedUnit.UnitData.unitName + " is out of range \n");
-                                }
-
-                                
+                                    // On range
+                                    print(selectedUnit.UnitData.range >= GameManager.DistanceWithLines(selectedUnit.transform.position, selectedTile.currentUnit.transform.position));
+                                    if (selectedUnit.UnitData.range >= GameManager.DistanceWithLines(selectedUnit.transform.position, selectedTile.currentUnit.transform.position))
+                                    {
+                                        if(oldTile.currentUnit.Player != selectedTile.currentUnit.Player)
+                                        {
+                                            // Attack
+                                            GameManager.instance.ClearRangeIndicator();
+                                            selectedUnit.SetLayer(1);
+                                            selectedTile.currentUnit.Hit(selectedUnit.CurrentDamage);
+                                            CreateDamageText(selectedUnit.CurrentDamage, selectedTile.currentUnit.transform.position);
+                                            SetHoverInfo();
+                                            oldTile.currentUnit.HasAttacked = true;
+                                            Log("<color=white> " + selectedUnit.UnitData.name + " dealt <color=red>" + selectedUnit.CurrentDamage + "<color=white> damage to " + selectedTile.currentUnit.UnitData.name + "\n");
+                                        }
+                                        else
+                                        {
+                                            Log("<color=orange> " + selectedUnit.UnitData.unitName + " is your ally you fcking idiot \n");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Log("<color=red> " + selectedUnit.UnitData.unitName + " is out of range \n");
+                                    }
+                                }                                      
                             }
-                        }
-                        
+                        }                        
                     }
 
                     
@@ -193,8 +204,7 @@ public class Selector : MonoBehaviour
 
         if (hoveredTile.currentUnit && !hoveredTile.currentUnit.IsDead)
         {
-            unitName.text = hoveredTile.currentUnit.UnitData.unitName;
-
+            unitName.text = hoveredTile.currentUnit.UnitData.unitName + " Player" + (hoveredTile.currentUnit.Player + 1);
 
             unitStats.SetText
                 (
@@ -209,7 +219,7 @@ public class Selector : MonoBehaviour
         hoverInfo.GetComponent<VerticalLayoutGroup>().SetLayoutVertical();
     }
 
-    private void SetSelectedInfo()
+    public void SetSelectedInfo()
     {
         selectedUnitName.text = selectedUnit.UnitData.unitName;
         selectedUnitImage.sprite = selectedUnit.UnitData.unitSprite;

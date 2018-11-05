@@ -9,6 +9,10 @@ public class GameManager : MonoBehaviour
     public TileDataRow[] tileMapData;
     public UnitData unitExample;
     public GameObject squarePrefab;
+
+    public int PlayerTurn { get; set; }         // 0 => Player1 ---- 1 => Player2
+    private List<Unit>[] Player;
+    [SerializeField] private TMPro.TextMeshProUGUI playerText;
    
     private List<List<Tile>> tileMap;
 
@@ -18,7 +22,8 @@ public class GameManager : MonoBehaviour
     private List<GameObject> rangeIndicatorList = new List<GameObject>();
 
     public Color ableToMove;
-    public Color blocked;
+    public Color enemy;
+    public Color ally;
 
     private void Awake()
     {
@@ -29,6 +34,12 @@ public class GameManager : MonoBehaviour
         levelContainer.name = "Level Container";
         unitsContainer = new GameObject().transform;
         unitsContainer.name = "Units Container";
+
+        Player      = new List<Unit>[2];
+        Player[0]   = new List<Unit>();
+        Player[1]   = new List<Unit>();
+
+        playerText.text = "Turn: Player" + (PlayerTurn+1);
 
         tileMap = new List<List<Tile>>();
 
@@ -64,22 +75,20 @@ public class GameManager : MonoBehaviour
         {
             for (int j = 0; j < tileMap[i].Count; j++)
             {
-                if (i == 5)
+                if (i == 2 || i == 6)
                 {
                     Unit newUnit = Instantiate(squarePrefab, tileMap[i][j].transform.position, Quaternion.identity, unitsContainer).AddComponent<Unit>();
+                    Player[i / 5].Add(newUnit);
+                    newUnit.Player = i / 5;
                     newUnit.SetUnitData(unitExample);
                     tileMap[i][j].currentUnit = newUnit;
-
                 }
-                
             }
         }
     }
 
     public void UnitRangeIndicator(Tile currentTile)
     {
-        bool onlyShowEnemies = false;
-
         currentTile.currentUnit.SetLayer(2);
 
         int movementRange = currentTile.currentUnit.CurrentMovementPoints;
@@ -115,11 +124,16 @@ public class GameManager : MonoBehaviour
 
                     Tile tileRef = tileMap[(int)rangePos.y][(int)rangePos.x];
 
-                    if (distance <= attackRange && tileRef.currentUnit)
+                    if (distance <= attackRange && tileRef.currentUnit && !currentTile.currentUnit.HasAttacked)
                     {
                         SpriteRenderer rangeRenderer = Instantiate(squarePrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
+                        print(currentTile.currentUnit.Player + " " + tileRef.currentUnit.Player);
+                        if (currentTile.currentUnit.Player != tileRef.currentUnit.Player)
+                            rangeRenderer.color = enemy;
+                        else
+                            rangeRenderer.color = ally;
+
                         rangeRenderer.sortingOrder = 1;
-                        rangeRenderer.color = blocked;
                         rangeIndicatorList.Add(rangeRenderer.gameObject);
                         
                     }
@@ -128,15 +142,6 @@ public class GameManager : MonoBehaviour
                         SpriteRenderer rangeRenderer = Instantiate(squarePrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
                         rangeRenderer.sortingOrder = 1;
                         rangeRenderer.color = ableToMove;
-                        //if (!onlyShowEnemies)
-                        //{
-                        //    if (tileRef.currentUnit) rangeRenderer.color = blocked;
-                        //    else rangeRenderer.color = ableToMove;
-                        //}
-                        //else if(tileRef.currentUnit)
-                        //{
-                        //    rangeRenderer.color = blocked;
-                        //}
                         rangeIndicatorList.Add(rangeRenderer.gameObject);
                     }
                 }
@@ -173,6 +178,24 @@ public class GameManager : MonoBehaviour
         return distance;
     }
 
+    public void RemoveUnit(Unit remove, int player)
+    {
+        Player[player].Remove(remove);
+        Destroy(remove.gameObject);
+        if (Player[player].Count == 0) print("Player 1 wins");
+        else print("Player 2 wins");
+    }
+
+
+    public void ChangeTurn()
+    {
+        PlayerTurn = (PlayerTurn + 1 )% 2;
+        playerText.text = "Turn: Player" + (PlayerTurn + 1);
+        foreach (Unit unit in Player[PlayerTurn])
+        {
+            unit.ResetUnit();
+        }
+    }
     
 
 }
