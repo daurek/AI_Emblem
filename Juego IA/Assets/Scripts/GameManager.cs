@@ -10,6 +10,8 @@ public class GameManager : MonoBehaviour
     public UnitData unitExample;
     public GameObject squarePrefab;
 
+    private bool gameOver;
+
     public int PlayerTurn { get; set; }         // 0 => Player1 ---- 1 => Player2
     private List<Unit>[] Player;
     [SerializeField] private TMPro.TextMeshProUGUI playerText;
@@ -51,6 +53,11 @@ public class GameManager : MonoBehaviour
 
     }
 
+    private void Update()
+    {
+        if (Input.GetButtonDown("Jump")) ChangeTurn();   
+    }
+
     private void CreateMap()
     {
         int idCounter = 0;
@@ -73,7 +80,7 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < tileMap.Count; i++)
         {
-            for (int j = 0; j < tileMap[i].Count; j++)
+            for (int j = 0; j < 1; j++)
             {
                 if (i == 2 || i == 6)
                 {
@@ -182,18 +189,28 @@ public class GameManager : MonoBehaviour
     {
         Player[player].Remove(remove);
         Destroy(remove.gameObject);
-        if (Player[player].Count == 0) print("Player 1 wins");
-        else print("Player 2 wins");
+        if (Player[player].Count == 0)
+        {
+            gameOver = true;
+            Selector.instance.Log("<color=green> Player" + (PlayerTurn + 1) + " wins \n");
+        }
     }
 
 
     public void ChangeTurn()
     {
-        PlayerTurn = (PlayerTurn + 1 )% 2;
-        playerText.text = "Turn: Player" + (PlayerTurn + 1);
-        foreach (Unit unit in Player[PlayerTurn])
+        if (!gameOver)
         {
-            unit.ResetUnit();
+            ClearRangeIndicator();
+            PlayerTurn = (PlayerTurn + 1 )% 2;
+            playerText.text = "Turn: Player" + (PlayerTurn + 1);
+            foreach (List<Unit> list in Player)
+            {
+                foreach (Unit unit in list)
+                {
+                    unit.ResetUnit();
+                }
+            }
         }
     }
     

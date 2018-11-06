@@ -104,7 +104,7 @@ public class Selector : MonoBehaviour
             if (!MovingUnit)
             {
                 // If tile selected has unit then select that unit
-                if (hoveredTile && hoveredTile.currentUnit && hoveredTile.currentUnit.Player == GameManager.instance.PlayerTurn)
+                if (hoveredTile && hoveredTile.currentUnit && hoveredTile.currentUnit.Player == GameManager.instance.PlayerTurn && !hoveredTile.currentUnit.HasAttacked)
                 {   
                     if(selectedUnit) selectedUnit.SetLayer(1);
 
@@ -149,6 +149,7 @@ public class Selector : MonoBehaviour
                                 selectedUnit.SetLayer(1);
                                 oldTile.currentUnit = null;
                                 StartCoroutine(selectedUnit.Move(selectedTile));
+                                Log("<color=white> " + selectedUnit.UnitData.name + " (Player" + (selectedUnit.Player + 1) + ") moved to<color=yellow> " + selectedTile.TileData.tileName + " (" + (selectedTile.Position.x+1) + "," + (selectedTile.Position.y + 1)+ ")\n");
                                 SetSelectedInfo();
                                 oldTile = selectedTile;
                             }
@@ -158,23 +159,23 @@ public class Selector : MonoBehaviour
                                 if (!oldTile.currentUnit.HasAttacked)
                                 {
                                     // On range
-                                    print(selectedUnit.UnitData.range >= GameManager.DistanceWithLines(selectedUnit.transform.position, selectedTile.currentUnit.transform.position));
                                     if (selectedUnit.UnitData.range >= GameManager.DistanceWithLines(selectedUnit.transform.position, selectedTile.currentUnit.transform.position))
                                     {
                                         if(oldTile.currentUnit.Player != selectedTile.currentUnit.Player)
                                         {
                                             // Attack
+                                            Log("<color=white> " + selectedUnit.UnitData.name +" (Player" +(selectedUnit.Player+1) + ") dealt <color=red>" + selectedUnit.CurrentDamage + "<color=white> damage to " + selectedTile.currentUnit.UnitData.name + "\n");
                                             GameManager.instance.ClearRangeIndicator();
                                             selectedUnit.SetLayer(1);
                                             selectedTile.currentUnit.Hit(selectedUnit.CurrentDamage);
                                             CreateDamageText(selectedUnit.CurrentDamage, selectedTile.currentUnit.transform.position);
                                             SetHoverInfo();
                                             oldTile.currentUnit.HasAttacked = true;
-                                            Log("<color=white> " + selectedUnit.UnitData.name + " dealt <color=red>" + selectedUnit.CurrentDamage + "<color=white> damage to " + selectedTile.currentUnit.UnitData.name + "\n");
+                                            oldTile.currentUnit.Used();
                                         }
                                         else
                                         {
-                                            Log("<color=orange> " + selectedUnit.UnitData.unitName + " is your ally you fcking idiot \n");
+                                            Log("<color=orange> " + selectedUnit.UnitData.unitName + " is your ally \n");
                                         }
                                     }
                                     else

@@ -86,6 +86,12 @@ public class Unit : MonoBehaviour
     {
         HasAttacked = false;
         CurrentMovementPoints = UnitData.movementSpeed;
+        spriteRenderer.color = Color.white;
+    }
+
+    public void Used()
+    {
+        spriteRenderer.color = Color.red;
     }
 
 }
