@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-
     public static GameManager instance;
 
     public TileDataRow[] tileMapData;
@@ -31,7 +30,6 @@ public class GameManager : MonoBehaviour
     {
         instance = this;
 
-
         levelContainer = new GameObject().transform;
         levelContainer.name = "Level Container";
         unitsContainer = new GameObject().transform;
@@ -48,14 +46,17 @@ public class GameManager : MonoBehaviour
         CreateMap();
 
         CreateUnits();
-       
-
-
     }
 
     private void Update()
     {
-        if (Input.GetButtonDown("Jump")) ChangeTurn();   
+        if (PlayerTurn == 1)
+        {
+            //IA.Play();
+        }
+
+        else if (Input.GetButtonDown("Jump")) ChangeTurn();
+
     }
 
     private void CreateMap()
