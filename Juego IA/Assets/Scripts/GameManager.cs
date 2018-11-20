@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour
     private List<Unit>[] Player;
     [SerializeField] private TMPro.TextMeshProUGUI playerText;
    
-    private List<List<Tile>> tileMap;
+    public List<List<Tile>> tileMap;
 
     private Transform levelContainer;
     private Transform unitsContainer;
@@ -80,7 +80,7 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < tileMap.Count; i++)
         {
-            for (int j = 0; j < 1; j++)
+            for (int j = 0; j < tileMap[i].Count; j++)
             {
                 if (i == 2 || i == 6)
                 {
