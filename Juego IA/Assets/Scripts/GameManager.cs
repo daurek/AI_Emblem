@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     private bool gameOver;
 
     public int PlayerTurn { get; set; }         // 0 => Player1 ---- 1 => Player2
-    private List<Unit>[] Player;
+    public List<Unit>[] Player;
     [SerializeField] private TMPro.TextMeshProUGUI playerText;
    
     public List<List<Tile>> tileMap;
@@ -50,13 +50,7 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (PlayerTurn == 1)
-        {
-            //IA.Play();
-        }
-
-        else if (Input.GetButtonDown("Jump")) ChangeTurn();
-
+        if (Input.GetButtonDown("Jump")) ChangeTurn();
     }
 
     private void CreateMap()
@@ -90,6 +84,7 @@ public class GameManager : MonoBehaviour
                     newUnit.Player = i / 5;
                     newUnit.SetUnitData(unitExample);
                     tileMap[i][j].currentUnit = newUnit;
+                    newUnit.CurrentTile = tileMap[i][j];
                 }
             }
         }
@@ -154,9 +149,112 @@ public class GameManager : MonoBehaviour
                     }
                 }
             }
-        }
-        
+        }        
 
+    }
+
+    public List<Tile> UnitRangeIndicatorAI(Tile currentTile)
+    {
+        int movementRange = currentTile.currentUnit.CurrentMovementPoints;
+        int attackRange = currentTile.currentUnit.UnitData.range;
+        int totalRange = 0;
+        int range = 0;
+        List<Tile> possiblesTilesToMove = new List<Tile>();
+
+        if (movementRange < attackRange)
+        {
+            range = attackRange;
+        }
+        else
+        {
+            range = movementRange;
+        }
+
+        totalRange = range * 2 + 1;
+
+
+        GameObject[,] rangeArr = new GameObject[totalRange, totalRange];
+
+        for (int i = 0; i < rangeArr.GetLength(0); i++)
+        {
+            for (int j = 0; j < rangeArr.GetLength(1); j++)
+            {
+                Vector2 rangePos = new Vector2(currentTile.Position.x + i - range, currentTile.Position.y + j - range);
+
+                if (rangePos.x >= 0 && rangePos.y >= 0 && rangePos.x < tileMap[0].Count && rangePos.y < tileMap[0].Count && tileMap[(int)rangePos.y][(int)rangePos.x] != currentTile)
+                {
+                    // Calculate distance to point
+                    float distance = DistanceWithLines(currentTile.Position, rangePos);
+
+                    Tile tileRef = tileMap[(int)rangePos.y][(int)rangePos.x];
+
+                    //if (distance <= attackRange && tileRef.currentUnit && !currentTile.currentUnit.HasAttacked)
+                    //{
+                    //    SpriteRenderer rangeRenderer = Instantiate(squarePrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
+                    //    print(currentTile.currentUnit.Player + " " + tileRef.currentUnit.Player);
+                    //    if (currentTile.currentUnit.Player != tileRef.currentUnit.Player)
+                    //        rangeRenderer.color = enemy;
+                    //    else
+                    //        rangeRenderer.color = ally;
+
+                    //    rangeRenderer.sortingOrder = 1;
+                    //    rangeIndicatorList.Add(rangeRenderer.gameObject);
+
+                    //}
+                    if (distance <= movementRange && !tileRef.currentUnit)
+                    {
+                        possiblesTilesToMove.Add(tileRef);
+                    }
+                }
+            }
+        }
+        return possiblesTilesToMove;
+    }
+
+    public List<Tile> UnitRangeIndicatorAIAttack(Tile currentTile, Unit currentUnit)
+    {
+        int movementRange = currentUnit.CurrentMovementPoints;
+        int attackRange = currentUnit.UnitData.range;
+        int totalRange = 0;
+        int range = 0;
+        List<Tile> possiblesTilesToAttack = new List<Tile>();
+
+        if (movementRange < attackRange)
+        {
+            range = attackRange;
+        }
+        else
+        {
+            range = movementRange;
+        }
+
+        totalRange = range * 2 + 1;
+
+
+        GameObject[,] rangeArr = new GameObject[totalRange, totalRange];
+
+        for (int i = 0; i < rangeArr.GetLength(0); i++)
+        {
+            for (int j = 0; j < rangeArr.GetLength(1); j++)
+            {
+                Vector2 rangePos = new Vector2(currentTile.Position.x + i - range, currentTile.Position.y + j - range);
+
+                if (rangePos.x >= 0 && rangePos.y >= 0 && rangePos.x < tileMap[0].Count && rangePos.y < tileMap[0].Count && tileMap[(int)rangePos.y][(int)rangePos.x] != currentTile)
+                {
+                    // Calculate distance to point
+                    float distance = DistanceWithLines(currentTile.Position, rangePos);
+
+                    Tile tileRef = tileMap[(int)rangePos.y][(int)rangePos.x];
+
+                    if (distance <= attackRange && tileRef.currentUnit && !currentUnit.HasAttacked)
+                    {
+                        if (currentUnit.Player != tileRef.currentUnit.Player)
+                            possiblesTilesToAttack.Add(tileRef);
+                    }
+                }
+            }
+        }
+        return possiblesTilesToAttack;
     }
 
     public void ClearRangeIndicator()
@@ -212,8 +310,14 @@ public class GameManager : MonoBehaviour
                     unit.ResetUnit();
                 }
             }
+
+            if (PlayerTurn == 1)
+            {
+                IA.instance.Play();
+            }
+            
         }
     }
-    
-
 }
+
+

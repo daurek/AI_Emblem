@@ -11,6 +11,7 @@ public class Unit : MonoBehaviour
     public bool HasMoved { get; set; }
     public bool IsDead { get; private set; }
     public int Player { get; set; }
+    public Tile CurrentTile { get; set; }
 
     private SpriteRenderer spriteRenderer;
 
@@ -31,6 +32,11 @@ public class Unit : MonoBehaviour
    
     public IEnumerator Move(Tile destination)
     {
+        Tile oldTile = CurrentTile;
+        CurrentTile = destination;
+        destination.currentUnit = this;
+        oldTile.currentUnit = null;
+
         CurrentMovementPoints -= (int)GameManager.DistanceWithLines(transform.position, destination.Position);
         Selector.instance.MovingUnit = true;
 
@@ -61,6 +67,7 @@ public class Unit : MonoBehaviour
             CurrentDamage = UnitData.baseDamage;
         Selector.instance.SetSelectedInfo();
         Selector.instance.MovingUnit = false;
+
 
     }
 
