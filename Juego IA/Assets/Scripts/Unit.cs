@@ -8,7 +8,7 @@ public class Unit : MonoBehaviour
     public int CurrentHealth { get; private set; }
     public int CurrentMovementPoints { get; private set; }
     public bool HasAttacked { get; set; }
-    public bool HasMoved { get; set; }
+    public bool IsMoving { get; set; }
     public bool IsDead { get; private set; }
     public int Player { get; set; }
     public Tile CurrentTile { get; set; }
@@ -32,6 +32,7 @@ public class Unit : MonoBehaviour
    
     public IEnumerator Move(Tile destination)
     {
+        IsMoving = true;
         Tile oldTile = CurrentTile;
         CurrentTile = destination;
         destination.currentUnit = this;
@@ -67,13 +68,13 @@ public class Unit : MonoBehaviour
             CurrentDamage = UnitData.baseDamage;
         Selector.instance.SetSelectedInfo();
         Selector.instance.MovingUnit = false;
-
-
+        IsMoving = false;
     }
 
     public void Hit(int damage)
     {
         CurrentHealth -= damage;
+        Selector.instance.CreateDamageText(damage, CurrentTile.currentUnit.transform.position);
         if (CurrentHealth <= 0)
         {
             IsDead = true;

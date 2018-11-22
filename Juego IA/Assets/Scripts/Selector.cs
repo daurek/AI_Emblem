@@ -167,8 +167,7 @@ public class Selector : MonoBehaviour
                                             Log("<color=white> " + selectedUnit.UnitData.name +" (Player" +(selectedUnit.Player+1) + ") dealt <color=red>" + selectedUnit.CurrentDamage + "<color=white> damage to " + selectedTile.currentUnit.UnitData.name + "\n");
                                             GameManager.instance.ClearRangeIndicator();
                                             selectedUnit.SetLayer(1);
-                                            selectedTile.currentUnit.Hit(selectedUnit.CurrentDamage);
-                                            CreateDamageText(selectedUnit.CurrentDamage, selectedTile.currentUnit.transform.position);
+                                            selectedTile.currentUnit.Hit(selectedUnit.CurrentDamage);                                            
                                             SetHoverInfo();
                                             oldTile.currentUnit.HasAttacked = true;
                                             oldTile.currentUnit.Used();
@@ -232,7 +231,7 @@ public class Selector : MonoBehaviour
         selectUnitRangeText.text = "" + selectedUnit.UnitData.range;
     }
 
-    private void CreateDamageText(int damage, Vector2 position)
+    public void CreateDamageText(int damage, Vector2 position)
     {
         Vector2 ViewportPosition = Camera.main.WorldToViewportPoint(position);
         Vector2 WorldObject_ScreenPosition = new Vector2(

@@ -15,16 +15,26 @@ public class IA : MonoBehaviour
 
     public void Play()
     {
-        ScoringMove move;
+        ScoringMove bestMove;
 
         Unit currentUnit = null;
 
         for (int i = 0; i < GameManager.instance.Player[1].Count; i++)
         {
             currentUnit = GameManager.instance.Player[1][i];
-            move = Negamax(ObservarTablero(), currentUnit, 1);
-            StartCoroutine(currentUnit.Move(move.tile));
+            bestMove = Negamax(ObservarTablero(), currentUnit, 1);
+            StartCoroutine(currentUnit.Move(bestMove.tile));
+            Debug.Log(bestMove.unit);
+            if (bestMove.unit)
+            {
+                //while (currentUnit.IsMoving)
+                //{
 
+                //}
+
+                bestMove.unit.Hit(currentUnit.CurrentDamage);
+            }
+            
         }
         
         //Debug.Log("Jugada: " + move.movimiento + "// Score: " + move.score);
@@ -33,11 +43,14 @@ public class IA : MonoBehaviour
         GameManager.instance.ChangeTurn();
     }
 
-    ScoringMove Negamax(Board board, Unit currentUnit, int depth)
+    ScoringMove Negamax(Board _board, Unit _currentUnit, int _depth)
     {
         //byte bestMove = 0;
-        int bestScore = 0;
-        int currentScore = 0;
+        int bestAttackScore = 0;
+        int totalScore = 0;
+        int bestTotalScore = 0;
+        Unit bestUnitToAttack = null;
+        //int currentScore = 0;
         ScoringMove scoringMove = null;
        // Board newBoard = null;
 
@@ -67,16 +80,17 @@ public class IA : MonoBehaviour
         //Debug.Log("scoringMove.score: " + scoringMove.score);
         //Debug.Log("scoringMove.tile: " + scoringMove.tile);
         //return scoringMove;
-        if (depth == MAX_DEPTH)
+        if (_depth == MAX_DEPTH)
         {
-            bestScore = MINUS_INFINITE;
-            Tile[] possibleMoves = board.PossibleMoves(currentUnit);
+            bestAttackScore = MINUS_INFINITE;
+            Tile[] possibleMoves = _board.PossibleMoves(_currentUnit);
+            //Unit bestUnitToAttack = null;
 
             foreach (Tile tileToMove in possibleMoves)
             {
                 int tileScore = 0;
 
-                if (tileToMove.TileData.bonusUnit == currentUnit.UnitData)
+                if (tileToMove.TileData.bonusUnit == _currentUnit.UnitData)
                 {
 
                     tileScore += 20;
@@ -86,25 +100,67 @@ public class IA : MonoBehaviour
                     tileScore += 2;
                 }
 
-                Tile[] possibleAttacks  = board.PossibleAttacks(currentUnit, tileToMove);
-                print(possibleAttacks.Length);
+                Tile[] possibleAttacks = _board.PossibleAttacks(_currentUnit, tileToMove);
+                bestAttackScore = 0;
+
                 foreach (Tile tileToAttack in possibleAttacks)
                 {
-                    tileScore += 20;
+                    int attackScore = 0;
 
+                    // Able to kill
+                    if (tileToAttack.currentUnit.CurrentHealth <= _currentUnit.CurrentDamage) 
+                    {
+                        attackScore += 20;
+                    }
+                    else 
+                    {
 
-                    //if (tileScore > bestScore)
+                        attackScore += 10;
+                    }
+
+                    if (attackScore > bestAttackScore)
+                    {
+                        bestAttackScore = attackScore;
+                        bestUnitToAttack = tileToAttack.currentUnit;
+                        Debug.Log(bestUnitToAttack);
+                    }
+
+                    // tileScore = 20 attackScore = 20 totalScore = 40
+
+                    //if (attackScore + tileScore > bestScore)
                     //{
-                    //    bestScore = tileScore;
-                    //    bestTile = tileToMove;
+                    //    totalScore = attackScore + tileScore;
+                    //    bestUnitToAttack = tileToAttack.currentUnit; 
                     //}
 
+                    //if (attackScore > bestAttackScore)
+                    //{
+                    //    totalScore = attackScore + tileScore;
+                    //    bestAttackScore = attackScore;
+                    //    bestUnitToAttack = tileToAttack.currentUnit;
+                    //}
                 }
-                if (tileScore > bestScore)
+
+                totalScore = bestAttackScore + tileScore;
+
+                if (totalScore > bestTotalScore)
                 {
-                    bestScore = tileScore;
+                    bestTotalScore = totalScore;
                     bestTile = tileToMove;
+
+                    //if (bestAttackScore < tileScore)
+                    //{
+
+                    //}
                 }
+
+
+
+                //if (totalScore > bestAttackScore)
+                //{
+                //    bestAttackScore = totalScore;
+                //    bestTile = tileToMove;
+                //}
 
                 //newBoard = board.GenerateNewBoardFromMove(tileToMove);
                 // Recursividad
@@ -115,7 +171,7 @@ public class IA : MonoBehaviour
 
             }
             
-            scoringMove = new ScoringMove(bestScore, bestTile);
+            scoringMove = new ScoringMove(bestAttackScore, bestTile, bestUnitToAttack);
             //depth++;
             //Debug.Log("Score: " + scoringMove.score);
             //Debug.Log("Tile: " + scoringMove.tile);
@@ -123,8 +179,6 @@ public class IA : MonoBehaviour
             //Debug.Log("Current Unit: " + currentUnit.UnitData);
 
         }
-
-
         
         return scoringMove;
     }
