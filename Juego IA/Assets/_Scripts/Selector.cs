@@ -36,7 +36,7 @@ public class Selector : MonoBehaviour
     private Tile selectedTile;
     private Tile oldTile;
     private Unit selectedUnit;
-    internal static object intance;
+    //internal static object intance;
 
     public bool MovingUnit { get; set; }
 
@@ -221,14 +221,17 @@ public class Selector : MonoBehaviour
 
     public void SetSelectedInfo()
     {
-        selectedUnitName.text = selectedUnit.UnitData.unitName;
-        selectedUnitImage.sprite = selectedUnit.UnitData.unitSprite;
+        if (selectedUnit)
+        {
+            selectedUnitName.text = selectedUnit.UnitData.unitName;
+            selectedUnitImage.sprite = selectedUnit.UnitData.unitSprite;
 
-        selectedHealthBar.fillAmount = (float)selectedUnit.CurrentHealth / selectedUnit.UnitData.maxHealth;
-        selectedUnitHealthCount.text = selectedUnit.CurrentHealth + " / " + selectedUnit.UnitData.maxHealth;
-        selectUnitDamageText.text = "" + selectedUnit.CurrentDamage;
-        selectUnitSpeedText.text = selectedUnit.CurrentMovementPoints + " / " + selectedUnit.UnitData.movementSpeed;
-        selectUnitRangeText.text = "" + selectedUnit.UnitData.range;
+            selectedHealthBar.fillAmount = (float)selectedUnit.CurrentHealth / selectedUnit.UnitData.maxHealth;
+            selectedUnitHealthCount.text = selectedUnit.CurrentHealth + " / " + selectedUnit.UnitData.maxHealth;
+            selectUnitDamageText.text = "" + selectedUnit.CurrentDamage;
+            selectUnitSpeedText.text = selectedUnit.CurrentMovementPoints + " / " + selectedUnit.UnitData.movementSpeed;
+            selectUnitRangeText.text = "" + selectedUnit.UnitData.range;
+        }
     }
 
     public void CreateDamageText(int damage, Vector2 position)

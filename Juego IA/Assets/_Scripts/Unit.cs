@@ -5,10 +5,11 @@ public class Unit : MonoBehaviour
 {
     public UnitData UnitData { get; private set; }
     public int CurrentDamage { get; private set; }
-    public int CurrentHealth { get; private set; }
+    public int CurrentHealth { get; set; }
     public int CurrentMovementPoints { get; private set; }
     public bool HasAttacked { get; set; }
     public bool IsMoving { get; set; }
+    public bool hasTurn { get; set; }
     public bool IsDead { get; private set; }
     public int Player { get; set; }
     public Tile CurrentTile { get; set; }
@@ -30,7 +31,7 @@ public class Unit : MonoBehaviour
         GetComponent<SpriteRenderer>().sprite = UnitData.unitSprite;
     }
    
-    public IEnumerator Move(Tile destination)
+    public IEnumerator Move(Tile destination, Unit otherUnit = null)
     {
         IsMoving = true;
         Tile oldTile = CurrentTile;
@@ -62,13 +63,24 @@ public class Unit : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
         destination.currentUnit = this;
+
         if (destination.TileData.bonusUnit && destination.TileData.bonusUnit.unitName == destination.currentUnit.UnitData.unitName)
             CurrentDamage = UnitData.baseDamage + destination.TileData.bonusDamage;
         else
             CurrentDamage = UnitData.baseDamage;
+
         Selector.instance.SetSelectedInfo();
         Selector.instance.MovingUnit = false;
         IsMoving = false;
+
+        if (otherUnit)
+        {
+            otherUnit.Hit(CurrentDamage);
+            HasAttacked = true;
+            Used();
+        }
+
+        hasTurn = false;
     }
 
     public void Hit(int damage)

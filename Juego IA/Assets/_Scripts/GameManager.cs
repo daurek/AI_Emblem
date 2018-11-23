@@ -8,6 +8,9 @@ public class GameManager : MonoBehaviour
     public TileDataRow[] tileMapData;
     public UnitData unitExample;
     public GameObject squarePrefab;
+    public GameObject selectionPrefab;
+
+    public int playerCount = 5;
 
     private bool gameOver;
 
@@ -43,14 +46,17 @@ public class GameManager : MonoBehaviour
 
         tileMap = new List<List<Tile>>();
 
-        CreateMap();
+        
+    }
 
-        CreateUnits();
+    private void Start()
+    {
+        CreateMap();
     }
 
     private void Update()
     {
-        if (Input.GetButtonDown("Jump")) ChangeTurn();
+        if (PlayerTurn == 0 && Input.GetButtonDown("Jump")) ChangeTurn();
     }
 
     private void CreateMap()
@@ -59,34 +65,25 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < tileMapData.Length; i++)
         {
             List<Tile> tempList = new List<Tile>();
-            for (int j = 0; j < tileMapData[i].tileDataRow.Length; j++)
+            for (int j = 0; j < tileMapData[i].dataMap.Length; j++)
             {
                 Tile newTile = Instantiate(squarePrefab, new Vector2(j, i), Quaternion.identity, levelContainer).AddComponent<Tile>();
                 newTile.gameObject.AddComponent<BoxCollider2D>();
-                newTile.SetTileData(tileMapData[i].tileDataRow[j], new Vector2(j, i));
+                newTile.SetTileData(tileMapData[i].dataMap[j].tileData, new Vector2(j, i));
                 newTile.tileId = idCounter++;
+
+                if (tileMapData[i].dataMap[j].unitData)
+                {
+                    Unit newUnit = Instantiate(squarePrefab, newTile.Position, Quaternion.identity, unitsContainer).AddComponent<Unit>();
+                    newUnit.Player = tileMapData[i].dataMap[j].playerId;
+                    Player[newUnit.Player].Add(newUnit);
+                    newUnit.SetUnitData(tileMapData[i].dataMap[j].unitData);
+                    newTile.currentUnit = newUnit;
+                    newUnit.CurrentTile = newTile;
+                }
                 tempList.Add(newTile);
             }
             tileMap.Add(tempList);
-        }
-    }
-
-    private void CreateUnits()
-    {
-        for (int i = 0; i < tileMap.Count; i++)
-        {
-            for (int j = 0; j < tileMap[i].Count; j++)
-            {
-                if (i == 2 || i == 6)
-                {
-                    Unit newUnit = Instantiate(squarePrefab, tileMap[i][j].transform.position, Quaternion.identity, unitsContainer).AddComponent<Unit>();
-                    Player[i / 5].Add(newUnit);
-                    newUnit.Player = i / 5;
-                    newUnit.SetUnitData(unitExample);
-                    tileMap[i][j].currentUnit = newUnit;
-                    newUnit.CurrentTile = tileMap[i][j];
-                }
-            }
         }
     }
 
@@ -129,8 +126,8 @@ public class GameManager : MonoBehaviour
 
                     if (distance <= attackRange && tileRef.currentUnit && !currentTile.currentUnit.HasAttacked)
                     {
-                        SpriteRenderer rangeRenderer = Instantiate(squarePrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
-                        print(currentTile.currentUnit.Player + " " + tileRef.currentUnit.Player);
+                        SpriteRenderer rangeRenderer = Instantiate(selectionPrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
+
                         if (currentTile.currentUnit.Player != tileRef.currentUnit.Player)
                             rangeRenderer.color = enemy;
                         else
@@ -142,7 +139,7 @@ public class GameManager : MonoBehaviour
                     }
                     else if (distance <= movementRange && !tileRef.currentUnit)
                     {
-                        SpriteRenderer rangeRenderer = Instantiate(squarePrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
+                        SpriteRenderer rangeRenderer = Instantiate(selectionPrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
                         rangeRenderer.sortingOrder = 1;
                         rangeRenderer.color = ableToMove;
                         rangeIndicatorList.Add(rangeRenderer.gameObject);
@@ -172,7 +169,6 @@ public class GameManager : MonoBehaviour
 
         totalRange = range * 2 + 1;
 
-
         GameObject[,] rangeArr = new GameObject[totalRange, totalRange];
 
         for (int i = 0; i < rangeArr.GetLength(0); i++)
@@ -181,27 +177,14 @@ public class GameManager : MonoBehaviour
             {
                 Vector2 rangePos = new Vector2(currentTile.Position.x + i - range, currentTile.Position.y + j - range);
 
-                if (rangePos.x >= 0 && rangePos.y >= 0 && rangePos.x < tileMap[0].Count && rangePos.y < tileMap[0].Count && tileMap[(int)rangePos.y][(int)rangePos.x] != currentTile)
+                if (rangePos.x >= 0 && rangePos.y >= 0 && rangePos.x < tileMap[0].Count && rangePos.y < tileMap[0].Count)
                 {
                     // Calculate distance to point
                     float distance = DistanceWithLines(currentTile.Position, rangePos);
 
                     Tile tileRef = tileMap[(int)rangePos.y][(int)rangePos.x];
 
-                    //if (distance <= attackRange && tileRef.currentUnit && !currentTile.currentUnit.HasAttacked)
-                    //{
-                    //    SpriteRenderer rangeRenderer = Instantiate(squarePrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
-                    //    print(currentTile.currentUnit.Player + " " + tileRef.currentUnit.Player);
-                    //    if (currentTile.currentUnit.Player != tileRef.currentUnit.Player)
-                    //        rangeRenderer.color = enemy;
-                    //    else
-                    //        rangeRenderer.color = ally;
-
-                    //    rangeRenderer.sortingOrder = 1;
-                    //    rangeIndicatorList.Add(rangeRenderer.gameObject);
-
-                    //}
-                    if (distance <= movementRange && !tileRef.currentUnit)
+                    if (distance <= movementRange && (!tileRef.currentUnit || tileRef.currentUnit == currentTile.currentUnit))
                     {
                         possiblesTilesToMove.Add(tileRef);
                     }
@@ -239,7 +222,7 @@ public class GameManager : MonoBehaviour
             {
                 Vector2 rangePos = new Vector2(currentTile.Position.x + i - range, currentTile.Position.y + j - range);
 
-                if (rangePos.x >= 0 && rangePos.y >= 0 && rangePos.x < tileMap[0].Count && rangePos.y < tileMap[0].Count && tileMap[(int)rangePos.y][(int)rangePos.x] != currentTile)
+                if (rangePos.x >= 0 && rangePos.y >= 0 && rangePos.x < tileMap[0].Count && rangePos.y < tileMap[0].Count)
                 {
                     // Calculate distance to point
                     float distance = DistanceWithLines(currentTile.Position, rangePos);
@@ -284,17 +267,16 @@ public class GameManager : MonoBehaviour
         return distance;
     }
 
-    public void RemoveUnit(Unit remove, int player)
+    public void RemoveUnit(Unit unitToRemove, int player)
     {
-        Player[player].Remove(remove);
-        Destroy(remove.gameObject);
+        Player[player].Remove(unitToRemove);
+        Destroy(unitToRemove.gameObject);
         if (Player[player].Count == 0)
         {
             gameOver = true;
             Selector.instance.Log("<color=green> Player" + (PlayerTurn + 1) + " wins \n");
         }
     }
-
 
     public void ChangeTurn()
     {
@@ -318,6 +300,7 @@ public class GameManager : MonoBehaviour
             
         }
     }
+
 }
 
 

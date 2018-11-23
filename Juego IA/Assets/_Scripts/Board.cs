@@ -18,68 +18,71 @@ public class Board
     }
 
     public int Evaluate(int _activePlayer)
-    {
-        int NumberOfTilesIsPosibleToMove = 1;
-        int NumberOfEnemiesIsPosibleToAtack = 3;
-        int score = 0;
+    {   
 
-        //if (EsVictoria(jugador))
-        //{
-        //    return 100;
-        //}
-        //else if (EsVictoria(Contrario(jugador)))
-        //{
-        //    return -100;
-        //}
-        //else if (EsTableroLleno()) return 1;
+
+
+        //int NumberOfTilesIsPosibleToMove = 1;
+        //int NumberOfEnemiesIsPosibleToAtack = 3;
+        //int score = 0;
+
+        ////if (EsVictoria(jugador))
+        ////{
+        ////    return 100;
+        ////}
+        ////else if (EsVictoria(Contrario(jugador)))
+        ////{
+        ////    return -100;
+        ////}
+        ////else if (EsTableroLleno()) return 1;
 
         
-        for (int i = 0; i < NumberOfTilesIsPosibleToMove; i++)
-        {
-            if (i == NumberOfTilesIsPosibleToMove - 1)
-            {
-                score += 20;
-                //Debug.Log("score1: " + score);
-            }
+        //for (int i = 0; i < NumberOfTilesIsPosibleToMove; i++)
+        //{
+        //    if (i == NumberOfTilesIsPosibleToMove - 1)
+        //    {
+        //        score += 20;
+        //        //Debug.Log("score1: " + score);
+        //    }
 
-            for (int j = 0; j < NumberOfEnemiesIsPosibleToAtack; j++)
-            {
-                if (j == NumberOfEnemiesIsPosibleToAtack - 1)
-                {
-                    score += 20;
-                    //Debug.Log("score2: " + score);
-                }                
-            }
-        }
-        // Pediente programar evaluaciones intermedias.
-        //Debug.Log("score: " + score);
-        return score;
+        //    for (int j = 0; j < NumberOfEnemiesIsPosibleToAtack; j++)
+        //    {
+        //        if (j == NumberOfEnemiesIsPosibleToAtack - 1)
+        //        {
+        //            score += 20;
+        //            //Debug.Log("score2: " + score);
+        //        }                
+        //    }
+        //}
+        //// Pediente programar evaluaciones intermedias.
+        ////Debug.Log("score: " + score);
+        return 2;
     }
 
     public Tile[] PossibleMoves(Unit _currentUnit) // Devuelve el número de casillas a las que puede ir la unidad
     {
-        Tile[] possiblesTilesToMove = GameManager.instance.UnitRangeIndicatorAI(_currentUnit.CurrentTile).ToArray();
-        //for (int i = 0; i < GameManager.instance.Player[1].Count; i++)
-        //{
-            // moves = GameManager.instance.UnitRangeIndicatorAI(GameManager.instance.Player[1][0].CurrentTile).ToArray();
-        //}
-        return possiblesTilesToMove;
+        return GameManager.instance.UnitRangeIndicatorAI(_currentUnit.CurrentTile).ToArray();
     }
 
     public Tile[] PossibleAttacks(Unit _currentUnit, Tile _currentTile)
     {
-        Tile[] possiblesUnitsToAttack = GameManager.instance.UnitRangeIndicatorAIAttack(_currentTile, _currentUnit).ToArray();
-        //for (int i = 0; i < GameManager.instance.Player[1].Count; i++)
-        //{
-        // moves = GameManager.instance.UnitRangeIndicatorAI(GameManager.instance.Player[1][0].CurrentTile).ToArray();
-        //}
-        return possiblesUnitsToAttack;
+        return GameManager.instance.UnitRangeIndicatorAIAttack(_currentTile, _currentUnit).ToArray();
     }
 
-    public Board GenerateNewBoardFromMove(Tile _initialTile) // Genera un nuevo tablero a partir del nuevo movimiento
+    public Board GenerateNewBoardFromMove(Tile _tileToMove, Unit _currentUnit, Unit _unitToAttack) // Genera un nuevo tablero a partir del nuevo movimiento
     {
-        //GameManager.instance.CreateMap();
-        throw new NotImplementedException();
+        //Board newBoard = new Board(tileMap);
+
+        _currentUnit.CurrentTile.currentUnit = null;
+        _tileToMove.currentUnit = _currentUnit;
+        _currentUnit.CurrentTile = _tileToMove;
+
+        if (_unitToAttack)
+        {
+            _unitToAttack.CurrentHealth -= _currentUnit.CurrentDamage;
+        }
+
+        return this;
     }
 }
 
