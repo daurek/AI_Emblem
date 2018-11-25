@@ -2,9 +2,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Handles user selection and interface
+/// </summary>
 public class Selector : MonoBehaviour
 {
-
     public static Selector instance;
 
     #region UI
@@ -32,17 +34,33 @@ public class Selector : MonoBehaviour
 
     #endregion
 
+    /// <summary>
+    /// Tile that user is currently hovering
+    /// </summary>
     private Tile hoveredTile;
+    /// <summary>
+    /// Tile that user has selected
+    /// </summary>
     private Tile selectedTile;
+    /// <summary>
+    /// Previous tile reference
+    /// </summary>
     private Tile oldTile;
+    /// <summary>
+    /// Unit that user has selected
+    /// </summary>
     private Unit selectedUnit;
-    //internal static object intance;
 
+    /// <summary>
+    /// If an unit is moving when don't let the user do anything
+    /// </summary>
     public bool MovingUnit { get; set; }
 
     private void Awake()
     {
         instance = this;
+
+        #region Getting UI References
 
         canvasRect = GetComponent<RectTransform>();
         hoverInfo.SetActive(false);
@@ -66,6 +84,9 @@ public class Selector : MonoBehaviour
         selectUnitSpeedText = unitStatsInfo.transform.GetChild(1).GetChild(0).GetComponent<TextMeshProUGUI>();
         selectUnitRangeText = unitStatsInfo.transform.GetChild(2).GetChild(0).GetComponent<TextMeshProUGUI>();
 
+        #endregion
+
+        // Reseting texts
         tileName.text = "";
         tileBonus.text = "";
         unitName.text = "";
@@ -74,7 +95,8 @@ public class Selector : MonoBehaviour
     }
 
     private void Update()
-    {
+    {   
+        // Raycast to check if user is hovering a tile
         RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero, 1, LayerMask.GetMask("Tiles"));
         if (hit)
         {
@@ -92,6 +114,7 @@ public class Selector : MonoBehaviour
             if (hoverInfo.activeSelf) hoverInfo.SetActive(false);
         }
 
+        // Update hover info position to mouse
         if (hoveredTile)
         {
             if(!hoverInfo.activeSelf) hoverInfo.SetActive(true);
@@ -115,6 +138,7 @@ public class Selector : MonoBehaviour
                     selectInfo.SetActive(true);
                     GameManager.instance.UnitRangeIndicator(oldTile);
                 }
+                // If not then clear the range indicator
                 else
                 {
                     GameManager.instance.ClearRangeIndicator();
@@ -193,32 +217,41 @@ public class Selector : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets the information of the hovered unit and/or tile close to the mouse
+    /// </summary>
     public void SetHoverInfo()
     {
-        unitName.text = "";
-        unitStats.text = "";
-        tileBonus.text = "";
-
-        tileName.text = hoveredTile.TileData.tileName;
-        if (hoveredTile.TileData.bonusUnit) tileBonus.SetText("+ " + hoveredTile.TileData.bonusDamage + "<sprite name=Damage> to <color=yellow><b>" + hoveredTile.TileData.bonusUnit.unitName + "</b>");
-
-        if (hoveredTile.currentUnit && !hoveredTile.currentUnit.IsDead)
+        if (hoveredTile)
         {
-            unitName.text = hoveredTile.currentUnit.UnitData.unitName + " Player" + (hoveredTile.currentUnit.Player + 1);
+            unitName.text = "";
+            unitStats.text = "";
+            tileBonus.text = "";
 
-            unitStats.SetText
-                (
-                 "<sprite name=Health> " + hoveredTile.currentUnit.CurrentHealth + "/" + hoveredTile.currentUnit.UnitData.maxHealth +   "\n" +
-                 "<sprite name=Damage> " + hoveredTile.currentUnit.CurrentDamage +                                                      "\n" +
-                 "<sprite name=Speed> "  + hoveredTile.currentUnit.UnitData.movementSpeed +                                             "\n" +
-                 "<sprite name=Range> "  + hoveredTile.currentUnit.UnitData.range +                                                     "\n"
-                );
+            tileName.text = hoveredTile.TileData.tileName;
+            if (hoveredTile.TileData.bonusUnit) tileBonus.SetText("+ " + hoveredTile.TileData.bonusDamage + "<sprite name=Damage> to <color=yellow><b>" + hoveredTile.TileData.bonusUnit.unitName + "</b>");
+
+            if (hoveredTile.currentUnit && !hoveredTile.currentUnit.IsDead)
+            {
+                unitName.text = hoveredTile.currentUnit.UnitData.unitName + " Player" + (hoveredTile.currentUnit.Player + 1);
+
+                unitStats.SetText
+                    (
+                     "<sprite name=Health> " + hoveredTile.currentUnit.CurrentHealth + "/" + hoveredTile.currentUnit.UnitData.maxHealth +   "\n" +
+                     "<sprite name=Damage> " + hoveredTile.currentUnit.CurrentDamage +                                                      "\n" +
+                     "<sprite name=Speed> "  + hoveredTile.currentUnit.UnitData.movementSpeed +                                             "\n" +
+                     "<sprite name=Range> "  + hoveredTile.currentUnit.UnitData.range +                                                     "\n"
+                    );
+            }
+
+            Canvas.ForceUpdateCanvases();
+            hoverInfo.GetComponent<VerticalLayoutGroup>().SetLayoutVertical();
         }
-
-        Canvas.ForceUpdateCanvases();
-        hoverInfo.GetComponent<VerticalLayoutGroup>().SetLayoutVertical();
     }
 
+    /// <summary>
+    /// Sets the information of the selected unit to the down right corner panel
+    /// </summary>
     public void SetSelectedInfo()
     {
         if (selectedUnit)
@@ -234,18 +267,29 @@ public class Selector : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Creates a damage text above a position
+    /// </summary>
+    /// <param name="damage"></param>
+    /// <param name="position"></param>
     public void CreateDamageText(int damage, Vector2 position)
-    {
+    {   
+        // Set that position to a canvas position 
         Vector2 ViewportPosition = Camera.main.WorldToViewportPoint(position);
         Vector2 WorldObject_ScreenPosition = new Vector2(
         ((ViewportPosition.x * canvasRect.sizeDelta.x) - (canvasRect.sizeDelta.x * 0.5f)),
         ((ViewportPosition.y * canvasRect.sizeDelta.y) - (canvasRect.sizeDelta.y * 0.5f)));
 
+        // Create text and fill it with damage
         RectTransform ui = Instantiate(damageTextPrefab, transform).GetComponent<RectTransform>();
         ui.GetComponent<TextMeshProUGUI>().text = ""  + damage;
         ui.anchoredPosition = WorldObject_ScreenPosition;
     }
 
+    /// <summary>
+    /// Logs out a text
+    /// </summary>
+    /// <param name="logMessage"></param>
     public void Log(string logMessage)
     {
         logRef.SetText(logRef.text + logMessage);

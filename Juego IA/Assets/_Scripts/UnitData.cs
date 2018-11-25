@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Data Class that stores information about the unit
+/// </summary>
 [CreateAssetMenu(fileName = "UnitData")]
 public class UnitData : ScriptableObject
 {
@@ -10,5 +13,4 @@ public class UnitData : ScriptableObject
     public int      movementSpeed;
     public int      maxHealth;
     public Sprite   unitSprite;  
-
 }

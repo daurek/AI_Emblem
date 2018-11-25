@@ -1,4 +1,7 @@
-﻿public class ScoringMove
+﻿/// <summary>
+/// Data Class that stores the score of a move, the destination tile and the unit it has to attack
+/// </summary>
+public class ScoringMove
 {
     public int score;
     public Tile tile;
@@ -11,5 +14,3 @@
         unit = _unit;
     }
 }
-
-

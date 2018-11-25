@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 
+/// <summary>
+/// Handles the IA movement, attack and management
+/// </summary>
 public class IA : MonoBehaviour
 {
-
     public static IA instance;
 
     private byte MAX_DEPTH = 1;
@@ -30,15 +32,21 @@ public class IA : MonoBehaviour
                 GameManager.instance.ChangeTurn();
             }
         }
-       
     }
 
+    /// <summary>
+    /// Starts the IA movement
+    /// </summary>
     public void Play()
     {
         unitIndex = 1;
         PlayUnit(GameManager.instance.Player[1][0]);
     }
 
+    /// <summary>
+    /// Plays the given unit after looking for it's best move
+    /// </summary>
+    /// <param name="unitToPlay"></param>
     public void PlayUnit(Unit unitToPlay)
     {   
         unitToPlay.hasTurn = true;
@@ -46,135 +54,42 @@ public class IA : MonoBehaviour
         StartCoroutine(unitToPlay.Move(bestMove.tile, bestMove.unit));
     }
 
+    /// <summary>
+    /// Runs through the given board and return the best move for the given unit
+    /// </summary>
+    /// <param name="_board"></param>
+    /// <param name="_currentUnit"></param>
+    /// <param name="_depth"></param>
+    /// <returns></returns>
     ScoringMove Negamax(Board _board, Unit _currentUnit, int _depth)
     {
-        ScoringMove scoringMove = null;
-        Unit bestUnitToAttack = null;
-        Tile bestTile = null;
-        int bestScore = 0;
-        int MINUS_INFINITE = 0;
+        ScoringMove scoringMove = new ScoringMove(0, null, null);
+        ScoringMove bestScoringMove = new ScoringMove(0,null,null);
 
-        // Comprobar si hemos terminado de hacer recursión, por 2 posibles motivos:
-        // 1. hemos llegado a una jugada terminal.
-        // 2. hemos alcanzado la máxima profundidad que nos permite nuestra inteligencia.
-        //if (depth == MAX_DEPTH)  //|| board.IsEndOfGame())
-        //{
-        //    // En los niveles impares el valor de la evaluación se invierte, para ajustarlo al comportamiento de negamax
-
-        //    if (depth % 2 == 0)
-        //    {
-        //        scoringMove = new ScoringMove(board.Evaluate(activePlayer), tile);
-
-        //    }
-        //    else
-        //    {
-        //        scoringMove = new ScoringMove(-board.Evaluate(activePlayer), tile);
-        //    }
-        //}
-
-        //return scoringMove;
-
-
-        //if (_depth == MAX_DEPTH)
-        //{
-        //    //En los niveles impares el valor de la evaluación se invierte, para ajustarlo al comportamiento de negamax
-
-        //    if (_depth % 2 == 1)
-        //    {
-        //        //scoringMove = new ScoringMove(_board.Evaluate(_board.activePlayer), bestTile, bestUnitToAttack );
-        //        scoringMove = Negamax(_board.GenerateNewBoardFromMove(bestTile, _currentUnit, bestUnitToAttack), _currentUnit, _depth);
-        //    }
-        //    else
-        //    {
-        //        //scoringMove = new ScoringMove(-_board.Evaluate(_board.activePlayer), bestTile, bestUnitToAttack);
-        //        scoringMove = Negamax(_board.GenerateNewBoardFromMove(bestTile, _currentUnit, bestUnitToAttack), _currentUnit, _depth);
-        //        scoringMove.score *= -1;
-        //    }
-
-        //}
-        //else
         if (_depth <= MAX_DEPTH)
         {
-            bestScore = MINUS_INFINITE;
-
             Tile[] possibleMoves = _board.PossibleMoves(_currentUnit);
 
+            // Loop through every possible tile that the unit can move
             foreach (Tile tileToMove in possibleMoves)
             {
+                scoringMove = _board.Evaluate(tileToMove, _currentUnit);
 
-                int score = 0;
-
-                if (tileToMove.TileData.bonusUnit == _currentUnit.UnitData)
+                // Take the best move
+                if (bestScoringMove.score < scoringMove.score)
                 {
-
-                    score += 20;
+                    bestScoringMove = scoringMove;
                 }
-                else
-                {
-                    score += 2;
-                }
-
-                Tile[] possibleAttacks = _board.PossibleAttacks(_currentUnit, tileToMove);
-
-                if (score > bestScore)
-                {
-                    bestScore = score;
-                    bestTile = tileToMove;
-                    bestUnitToAttack = null;
-                }
-
-                //if (possibleAttacks.Length == 0)
-                //{
-                //    scoringMove = Negamax(_board.GenerateNewBoardFromMove(tileToMove, _currentUnit, bestUnitToAttack), _currentUnit, _depth + 1);
-                //    // Invertimos el signo para que, en cada nivel de profundidad, haga efecto el “nega” de Negamax
-                //    bestScore -= scoringMove.score;
-                //}
-
-
-                foreach (Tile tileToAttack in possibleAttacks)
-                {
-                    // Able to kill
-                    if (tileToAttack.currentUnit.CurrentHealth <= _currentUnit.CurrentDamage)
-                    {
-                        score += 20;
-                    }
-                    else
-                    {
-                        score += 10;
-                    }
-
-                    if (score > bestScore)
-                    {
-                        bestScore = score;
-                        bestUnitToAttack = tileToAttack.currentUnit;
-                        bestTile = tileToMove;
-                    }
-
-
-
-                    //// Recursividad
-                    //scoringMove = Negamax(_board.GenerateNewBoardFromMove(tileToMove, _currentUnit, bestUnitToAttack), _currentUnit, _depth + 1);
-                    //// Invertimos el signo para que, en cada nivel de profundidad, haga efecto el “nega” de Negamax
-                    //bestScore -= scoringMove.score;
-                    
-
-                }
-
-
-
-
-
-                // Actualizar mejor score si obtenemos una jugada mejor.
-
             }
-
-            scoringMove = new ScoringMove(bestScore, bestTile, bestUnitToAttack);
-            //_depth++;
         }
         
-        return scoringMove;
+        return bestScoringMove;
     }
 
+    /// <summary>
+    /// Creates a new board
+    /// </summary>
+    /// <returns></returns>
     private Board CheckBoard()
     {
         return new Board(GameManager.instance.tileMap);

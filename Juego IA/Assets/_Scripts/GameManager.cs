@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Handles game management, turn, wining condition
+/// </summary>
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
@@ -20,6 +23,7 @@ public class GameManager : MonoBehaviour
    
     public List<List<Tile>> tileMap;
 
+    // Containers for the units and tiles
     private Transform levelContainer;
     private Transform unitsContainer;
 
@@ -45,38 +49,47 @@ public class GameManager : MonoBehaviour
         playerText.text = "Turn: Player" + (PlayerTurn+1);
 
         tileMap = new List<List<Tile>>();
-
-        
     }
 
     private void Start()
-    {
+    {   
         CreateMap();
     }
 
     private void Update()
-    {
+    {   
+        // If it's your turn and you press space then the turn changes to the AI
         if (PlayerTurn == 0 && Input.GetButtonDown("Jump")) ChangeTurn();
     }
 
+    /// <summary>
+    /// Creates the map with the given data on the inspector
+    /// </summary>
     private void CreateMap()
     {
         int idCounter = 0;
+
+        // Loops through tile map data
         for (int i = 0; i < tileMapData.Length; i++)
         {
             List<Tile> tempList = new List<Tile>();
             for (int j = 0; j < tileMapData[i].dataMap.Length; j++)
-            {
+            {   
+                // Creates tile and sets its data
                 Tile newTile = Instantiate(squarePrefab, new Vector2(j, i), Quaternion.identity, levelContainer).AddComponent<Tile>();
                 newTile.gameObject.AddComponent<BoxCollider2D>();
                 newTile.SetTileData(tileMapData[i].dataMap[j].tileData, new Vector2(j, i));
                 newTile.tileId = idCounter++;
 
+                // If it has a unit
                 if (tileMapData[i].dataMap[j].unitData)
-                {
+                {   
+                    // Create the unit
                     Unit newUnit = Instantiate(squarePrefab, newTile.Position, Quaternion.identity, unitsContainer).AddComponent<Unit>();
                     newUnit.Player = tileMapData[i].dataMap[j].playerId;
+                    // Adds unit to the player
                     Player[newUnit.Player].Add(newUnit);
+                    // Sets data to the unit
                     newUnit.SetUnitData(tileMapData[i].dataMap[j].unitData);
                     newTile.currentUnit = newUnit;
                     newUnit.CurrentTile = newTile;
@@ -87,6 +100,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Sets visually the units to it's respective colors
+    /// </summary>
+    /// <param name="currentTile"></param>
     public void UnitRangeIndicator(Tile currentTile)
     {
         currentTile.currentUnit.SetLayer(2);
@@ -96,10 +113,10 @@ public class GameManager : MonoBehaviour
         int totalRange= 0;
         int range = 0;
 
+        // Gets the higher range
         if (movementRange < attackRange)
         {
             range = attackRange;
-
         }
         else
         {
@@ -108,7 +125,7 @@ public class GameManager : MonoBehaviour
 
         totalRange = range * 2 + 1;
         
-
+        // Creates array for the unit's range
         GameObject[,] rangeArr = new GameObject[totalRange, totalRange];
         
         for (int i = 0; i < rangeArr.GetLength(0); i++)
@@ -117,39 +134,62 @@ public class GameManager : MonoBehaviour
             {
                 Vector2 rangePos = new Vector2(currentTile.Position.x + i - range, currentTile.Position.y + j - range);
                 
-                if (rangePos.x >= 0 && rangePos.y >= 0 && rangePos.x < tileMap[0].Count && rangePos.y < tileMap[0].Count && tileMap[(int)rangePos.y][(int)rangePos.x] != currentTile)
+                // If range isn't leaving the tilemap
+                if (rangePos.x >= 0 && rangePos.y >= 0 && rangePos.x < tileMap[0].Count && rangePos.y < tileMap[0].Count)
                 {
                     // Calculate distance to point
                     float distance = DistanceWithLines(currentTile.Position, rangePos);
 
-                    Tile tileRef = tileMap[(int)rangePos.y][(int)rangePos.x];
-
-                    if (distance <= attackRange && tileRef.currentUnit && !currentTile.currentUnit.HasAttacked)
+                    // If distance inside the range
+                    if (distance <= range)
                     {
-                        SpriteRenderer rangeRenderer = Instantiate(selectionPrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
-
-                        if (currentTile.currentUnit.Player != tileRef.currentUnit.Player)
-                            rangeRenderer.color = enemy;
-                        else
-                            rangeRenderer.color = ally;
-
-                        rangeRenderer.sortingOrder = 1;
-                        rangeIndicatorList.Add(rangeRenderer.gameObject);
+                        Tile tileRef = tileMap[(int)rangePos.y][(int)rangePos.x];
                         
-                    }
-                    else if (distance <= movementRange && !tileRef.currentUnit)
-                    {
-                        SpriteRenderer rangeRenderer = Instantiate(selectionPrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
-                        rangeRenderer.sortingOrder = 1;
-                        rangeRenderer.color = ableToMove;
-                        rangeIndicatorList.Add(rangeRenderer.gameObject);
+                        // If it's not the current unit tile
+                        if (tileRef != currentTile)
+                        {
+                            // If the distance is inferior to the attack range and it has an unit 
+                            if (distance <= attackRange && tileRef.currentUnit)
+                            {   
+                                SpriteRenderer rangeRenderer = Instantiate(selectionPrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
+                                rangeRenderer.sortingOrder = 1;
+                                // If it's an enemy unit then set a Red selection around them units
+                                if (currentTile.currentUnit.Player != tileRef.currentUnit.Player)
+                                    rangeRenderer.color = enemy;
+                                // If it's an allied unit then set a Blue selection around them units
+                                else
+                                    rangeRenderer.color = ally;
+
+                                rangeIndicatorList.Add(rangeRenderer.gameObject);
+                            }
+                            // distance lower than the movement range and doesnt have an unit
+                            else if (distance <= movementRange && !tileRef.currentUnit)
+                            {   
+                                SpriteRenderer rangeRenderer = Instantiate(selectionPrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
+                                rangeRenderer.sortingOrder = 1;
+                                rangeRenderer.color = ableToMove;
+                                rangeIndicatorList.Add(rangeRenderer.gameObject);
+                            }
+                            
+                        }
+                        // White selection around the selected unit
+                        else
+                        {
+                            SpriteRenderer rangeRenderer = Instantiate(selectionPrefab, tileRef.Position, Quaternion.identity, tileRef.transform).GetComponent<SpriteRenderer>();
+                            rangeRenderer.sortingOrder = 1;
+                            rangeIndicatorList.Add(rangeRenderer.gameObject);
+                        }
                     }
                 }
             }
         }        
-
     }
 
+    /// <summary>
+    /// Return a list of tiles that the AI can move into
+    /// </summary>
+    /// <param name="currentTile"></param>
+    /// <returns></returns>
     public List<Tile> UnitRangeIndicatorAI(Tile currentTile)
     {
         int movementRange = currentTile.currentUnit.CurrentMovementPoints;
@@ -194,6 +234,12 @@ public class GameManager : MonoBehaviour
         return possiblesTilesToMove;
     }
 
+    /// <summary>
+    /// Returns a list of the possible tiles that the unit can attack
+    /// </summary>
+    /// <param name="currentTile"></param>
+    /// <param name="currentUnit"></param>
+    /// <returns></returns>
     public List<Tile> UnitRangeIndicatorAIAttack(Tile currentTile, Unit currentUnit)
     {
         int movementRange = currentUnit.CurrentMovementPoints;
@@ -240,6 +286,9 @@ public class GameManager : MonoBehaviour
         return possiblesTilesToAttack;
     }
 
+    /// <summary>
+    /// Clears the range indicator (only visual)
+    /// </summary>
     public void ClearRangeIndicator()
     {
         for (int i = 0; i < rangeIndicatorList.Count; i++)
@@ -250,6 +299,12 @@ public class GameManager : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Returns distance between two points
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
     public static float DistanceWithLines(Vector2 start, Vector2 end)
     {
         float distance;
@@ -267,6 +322,11 @@ public class GameManager : MonoBehaviour
         return distance;
     }
 
+    /// <summary>
+    /// Removes unit from the player's array
+    /// </summary>
+    /// <param name="unitToRemove"></param>
+    /// <param name="player"></param>
     public void RemoveUnit(Unit unitToRemove, int player)
     {
         Player[player].Remove(unitToRemove);
@@ -278,6 +338,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Changes turn to the other player
+    /// </summary>
     public void ChangeTurn()
     {
         if (!gameOver)
@@ -285,6 +348,7 @@ public class GameManager : MonoBehaviour
             ClearRangeIndicator();
             PlayerTurn = (PlayerTurn + 1 )% 2;
             playerText.text = "Turn: Player" + (PlayerTurn + 1);
+            // Reset every unit state
             foreach (List<Unit> list in Player)
             {
                 foreach (Unit unit in list)
@@ -293,6 +357,7 @@ public class GameManager : MonoBehaviour
                 }
             }
 
+            // Play AI only it the turn has reached 1
             if (PlayerTurn == 1)
             {
                 IA.instance.Play();
